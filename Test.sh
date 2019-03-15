@@ -65,7 +65,7 @@ do
 
         #clear table
         mysql -h ${db_endpoint} -D ${dbname} -P ${port} -u ${user} -p${passwd} \
-            -e "truncate ${table_name}; select count(file_id) from testtbl01;";
+            -e "truncate ${table_name}; select count(file_id) from ${table_name};";
         sleep ${interval}
         
         # test
