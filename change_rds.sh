@@ -1,7 +1,8 @@
 #!/bin/sh
 
 #parameter
-IOPS='32768 1024 2048 4096 8192 16384'
+IOPS='1024 2048 4096 8192 16384'
+#IOPS='1024 2048 4096 8192 16384 32768'
 
 #MySQL
 DBIdentifier='db01'
@@ -28,10 +29,10 @@ for iops in ${IOPS}
 do
     # Change IOPS
     if [ "A${iops}" == "A${RDS_IOPS}" ]; then
-        echo "IOPS=${iops} is same to current RDS. skip"    
+        echo "$(date '+%Y/%m/%d %H:%m:%S'):  IOPS=${iops} is same to current RDS. skip"    
     else 
         #change iops
-        echo "change RDS IOPS"
+        echo "$(date '+%Y/%m/%d %H:%m:%S'): change RDS IOPS"
         aws rds modify-db-instance \
             --db-instance-identifier ${DBIdentifier} \
             --allocated-storage ${RDS_SIZE} \
@@ -48,18 +49,19 @@ do
             if [ "A${STAT}" == "Aavailable" ]; then
                 break
             else
-                echo ${STAT} 
+                echo "$(date '+%Y/%m/%d %H:%m:%S'): DBInstanceStatus= ${STAT}"
                 sleep 15
             fi
         done
-        echo "modify done"
+        echo "$(date '+%Y/%m/%d %H:%m:%S'): modify done"
     fi
         
     #test
-    ${TESTCOMMAND}    
-
+    echo "$(date '+%Y/%m/%d %H:%m:%S'): kick test program"
+    ${TESTCOMMAND}
+    echo "$(date '+%Y/%m/%d %H:%m:%S'): finished test program"
 done
 
 #end
-echo "ALL COMPLETED!!!!"
+echo "$(date '+%Y/%m/%d %H:%m:%S'): change_rds.sh: ALL COMPLETED!!!!"
 
