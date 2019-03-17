@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #parameter
-Parallel='1 2 4 8 16 32 64'
+Parallel='1 2 4 8 16 32 64 128 256'
 NumObjects=30000
 insertfile='test_1KB.dat test_2KB.dat  test_4KB.dat  test_8KB.dat test_16KB.dat test_32KB.dat  test_64KB.dat  test_128KB.dat test_256KB.dat'
 
@@ -23,6 +23,9 @@ TestProgram='./InsertBLOB_Client.py'
 
 #get client instance
 ClientInstanceType=$(curl -sS http://169.254.169.254/latest/meta-data/instance-type)
+
+#Main--------------------
+echo "$(date '+%Y/%m/%d %H:%M:%S'): start test program."
 
 #Get RDS status
 RDS_InstanceType=$(aws --output text rds describe-db-instances \
@@ -64,12 +67,15 @@ do
         echo "parallel           = ${i}"
 
         #clear table
+        echo "$(date '+%Y/%m/%d %H:%M:%S') truncate a table"
         mysql -h ${db_endpoint} -D ${dbname} -P ${port} -u ${user} -p${passwd} \
             -e "truncate ${table_name}; select count(file_id) from ${table_name};";
         sleep ${interval}
         
         # test
+        echo "$(date '+%Y/%m/%d %H:%M:%S') kick MySQL insert test program"
         ${TestProgram} 0 ${i} ${NumObjects} ${filename} | tee /tmp/test.log
+        echo "$(date '+%Y/%m/%d %H:%M:%S') finished MySQL insert test program"
 
         # get the result
         ResultTime=$(grep 'ALL_ExecutionTime(sec):' /tmp/test.log | sed -e 's/ALL_ExecutionTime(sec)://')
@@ -102,5 +108,4 @@ do
 done
 
 #end
-echo "ALL COMPLETED!!!!"
-
+echo "$(date '+%Y/%m/%d %H:%M:%S'): ALL COMPLETED!!!!"
